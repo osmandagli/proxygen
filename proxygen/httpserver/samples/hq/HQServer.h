@@ -80,17 +80,15 @@ class HQServer {
     transportSettingsOverrideFn_ = std::move(fn);
   }
 
-  // Call before start()
-  // mirror of existing style, but public
   void setQuicUDPSocketFactories(
       std::unique_ptr<quic::QuicUDPSocketFactory> listenerFactory,
       std::unique_ptr<quic::QuicUDPSocketFactory> connFactory) {
-    CHECK(server_);
-    // RX
-    server_->setListenerSocketFactory(std::move(listenerFactory));
-    // TX
-    server_->setQuicUDPSocketFactory(std::move(connFactory));
+    CHECK(!server_); // must be allocated before the start of the server
+    listenerSocketFactory_ = std::move(listenerFactory);
+    connSocketFactory_ = std::move(connFactory);
   }
+  std::unique_ptr<quic::QuicUDPSocketFactory> listenerSocketFactory_;
+  std::unique_ptr<quic::QuicUDPSocketFactory> connSocketFactory_;
 
   // Takeover runtime wrapper methods - forward to underlying QuicServer
   // Takeover part 1: Methods called on the old instance.

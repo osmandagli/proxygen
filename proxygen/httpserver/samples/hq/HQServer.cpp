@@ -353,7 +353,12 @@ void HQServer::start(const folly::SocketAddress& localAddress,
   options.processId = processId_;
   options.hostId = hostId_;
   options.cidVersion = cidVersion_;
-  options.socketFactory = std::make_unique<QuicSharedUDPSocketFactory>();
+  options.socketFactory = connSocketFactory_ 
+                          ? std::move(connSocketFactory_) 
+                          : std::make_unique<QuicSharedUDPSocketFactory>();
+  if (listenerSocketFactory_) {
+    options.listenerSocketFactory = std::move(listenerSocketFactory_);
+  }
   options.healthCheckToken = std::string("health");
   folly::SocketOptionMap socketOptions;
   if (params_.udpRecvBufferSize > 0) {
